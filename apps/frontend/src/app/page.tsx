@@ -9,7 +9,7 @@ export default function CombinedPortal() {
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', minHeight: '100vh', background: isAdminMode ? '#f4f6f8' : '#ffffff' }}>
       
-      {/* GLOBAL TOGGLE SWITCH (Hidden in a real production app, but kept here so you can test) */}
+      {/* GLOBAL TOGGLE SWITCH */}
       <div style={{ background: '#111', padding: '8px 24px', display: 'flex', justifyContent: 'flex-end' }}>
         <button 
           onClick={() => setIsAdminMode(!isAdminMode)}
@@ -91,38 +91,70 @@ export default function CombinedPortal() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <div>
                 <h2 style={{ margin: '0 0 8px 0', color: '#111' }}>{activeTab} Hub</h2>
-                <p style={{ margin: 0, color: '#666' }}>Enterprise PRM, Referral Tracker, and Lead CRM.</p>
+                <p style={{ margin: 0, color: '#666' }}>
+                  {activeTab === 'Growth & Sales' && 'Enterprise PRM, Referral Tracker, and Lead CRM.'}
+                  {activeTab === 'Clinical Engine' && 'AI Vision Diagnostics and Patient Medical Records.'}
+                  {activeTab === 'Reception Desk' && 'Live Appointment Calendar and Queue Management.'}
+                  {activeTab === 'CEO Dock' && 'High-level Clinic Overview and Revenue Metrics.'}
+                  {activeTab === 'Financial Ledger' && 'Automated Billing and Revenue Tracking.'}
+                </p>
               </div>
               <button style={{ background: '#ebf4ff', color: '#0066cc', border: '1px solid #cce0ff', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
                 🔄 Refresh Live Pipeline
               </button>
             </div>
 
-            {/* METRICS CARDS */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '24px' }}>
-              <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                <p style={{ margin: '0 0 8px 0', color: '#888', fontSize: '0.9rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Total Pipeline Value</p>
-                <h3 style={{ margin: '0 0 8px 0', fontSize: '2rem' }}>₹0</h3>
-                <p style={{ margin: 0, color: '#0066cc', fontSize: '0.9rem' }}>Active Unconverted Prospects</p>
+            {/* CONDITIONAL RENDER: GROWTH & SALES */}
+            {activeTab === 'Growth & Sales' && (
+              <>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '24px' }}>
+                  <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                    <p style={{ margin: '0 0 8px 0', color: '#888', fontSize: '0.9rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Total Pipeline Value</p>
+                    <h3 style={{ margin: '0 0 8px 0', fontSize: '2rem' }}>₹0</h3>
+                    <p style={{ margin: 0, color: '#0066cc', fontSize: '0.9rem' }}>Active Unconverted Prospects</p>
+                  </div>
+                  <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                    <p style={{ margin: '0 0 8px 0', color: '#888', fontSize: '0.9rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Blended Acquisition Cost (CAC)</p>
+                    <h3 style={{ margin: '0 0 8px 0', fontSize: '2rem', color: '#00b36b' }}>₹840</h3>
+                    <p style={{ margin: 0, color: '#00b36b', fontSize: '0.9rem' }}>Optimal Target Zone (Under ₹1200)</p>
+                  </div>
+                  <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                    <p style={{ margin: '0 0 8px 0', color: '#888', fontSize: '0.9rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Gateway Intelligence</p>
+                    <h3 style={{ margin: '0 0 8px 0', fontSize: '1.4rem', color: '#0066cc', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ width: '10px', height: '10px', background: '#0066cc', borderRadius: '50%', display: 'inline-block' }}></span>
+                      🧠 Llama Vision Active
+                    </h3>
+                    <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>Radiology image parsing online.</p>
+                  </div>
+                </div>
+                
+                <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <p style={{ color: '#aaa', fontStyle: 'italic' }}>No inbound leads captured yet. Send a WhatsApp to begin!</p>
+                </div>
+              </>
+            )}
+
+            {/* CONDITIONAL RENDER: CLINICAL ENGINE */}
+            {activeTab === 'Clinical Engine' && (
+              <section style={{ padding: '24px', background: '#fff', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+                <h3>👁️ Recent AI Vision Submissions</h3>
+                <div style={{ background: '#fafafa', padding: '16px', borderRadius: '6px', marginTop: '16px', borderLeft: '4px solid #0070f3' }}>
+                  <small style={{ color: '#888' }}>Patient: WhatsApp Patient | Contact: Live Bridge</small>
+                  <p style={{ margin: '8px 0 0', fontStyle: 'italic', color: '#333', fontSize: '1.1rem' }}>
+                    "[AI Vision Summary] Visible premolar discoloration noted on image scan. Patient requests review during examination."
+                  </p>
+                </div>
+              </section>
+            )}
+
+            {/* CONDITIONAL RENDER: PLACEHOLDERS FOR OTHERS */}
+            {['CEO Dock', 'Reception Desk', 'Financial Ledger'].includes(activeTab) && (
+              <div style={{ background: '#fff', padding: '60px', borderRadius: '12px', textAlign: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', border: '1px dashed #ccc' }}>
+                <h3 style={{ color: '#666', fontSize: '1.5rem', marginBottom: '10px' }}>🚧 Module Under Construction</h3>
+                <p style={{ color: '#888' }}>This section will be wired up to your Neon Database next to stream real-time {activeTab.toLowerCase()} data.</p>
               </div>
-              <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                <p style={{ margin: '0 0 8px 0', color: '#888', fontSize: '0.9rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Blended Acquisition Cost (CAC)</p>
-                <h3 style={{ margin: '0 0 8px 0', fontSize: '2rem', color: '#00b36b' }}>₹840</h3>
-                <p style={{ margin: 0, color: '#00b36b', fontSize: '0.9rem' }}>Optimal Target Zone (Under ₹1200)</p>
-              </div>
-              <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                <p style={{ margin: '0 0 8px 0', color: '#888', fontSize: '0.9rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Gateway Intelligence</p>
-                <h3 style={{ margin: '0 0 8px 0', fontSize: '1.4rem', color: '#0066cc', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '10px', height: '10px', background: '#0066cc', borderRadius: '50%', display: 'inline-block' }}></span>
-                  🧠 Llama Vision Active
-                </h3>
-                <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>Radiology image parsing online.</p>
-              </div>
-            </div>
-            
-            <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <p style={{ color: '#aaa', fontStyle: 'italic' }}>No inbound leads captured yet. Send a WhatsApp to begin!</p>
-            </div>
+            )}
+
           </main>
         </div>
       )}
