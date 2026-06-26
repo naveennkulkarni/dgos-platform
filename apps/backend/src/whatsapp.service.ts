@@ -1,12 +1,13 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { PrismaClient } from '@prisma/client';
-import { Client, LocalAuth } from 'whatsapp-web.js';
+import { Client, LocalAuth, MessageMedia } from 'whatsapp-web.js';
 import * as qrcode from 'qrcode-terminal';
 import OpenAI from 'openai';
 
 const prisma = new PrismaClient();
 const openai = new OpenAI({ 
-  apiKey: "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", // IMPORTANT: Paste your Groq API key here
+  apiKey: "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", // IMPORTANT: Ensure your Groq key is pasted here
   baseURL: "https://api.groq.com/openai/v1" 
 });
 
@@ -19,31 +20,31 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
       authStrategy: new LocalAuth({ clientId: "dgos-clinic-bot" }),
       puppeteer: {
         headless: true,
-        executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-        args: [
-          '--no-sandbox', 
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-accelerated-2d-canvas',
-          '--disable-gpu'
-        ],
+        
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage', '--disable-accelerated-2d-canvas', '--disable-gpu'],
         timeout: 60000
       },
     });
   }
 
-  onModuleInit() { 
-    this.initializeWhatsApp(); 
-  }
+  onModuleInit() { this.initializeWhatsApp(); }
 
-  // FIXED: This prevents the server from hanging when you save changes
   async onModuleDestroy() {
     console.log('🛑 Shutting down Gateway safely...');
     try {
       await this.client.destroy();
-      console.log('✅ Gateway closed and files unlocked.');
+      console.log('✅ Gateway closed.');
     } catch (error) {
       console.error('⚠️ Error closing gateway:', error);
+    }
+  }
+
+  async sendMessage(to: string, body: string) {
+    try {
+      const formattedNumber = to.includes('@') ? to : `${to}@c.us`;
+      await this.client.sendMessage(formattedNumber, body);
+    } catch (error) {
+      console.error(`❌ Failed to send message:`, error);
     }
   }
 
@@ -58,6 +59,59 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
       if (!msg.from.includes("59816076644369")) return;
 
       try {
+        // 1. Fetch or Create Patient immediately so we can attach notes to them
+        let patient = await prisma.patient.findUnique({ where: { phone: msg.from } });
+        if (!patient) {
+          patient = await prisma.patient.create({ 
+            data: { firstName: "WhatsApp", lastName: "Patient", phone: msg.from } 
+          });
+        }
+
+        // ==========================================
+        // NEW: THE VISION & DOCUMENT AGENT
+        // ==========================================
+        if (msg.hasMedia) {
+          const media = await msg.downloadMedia();
+          
+          if (media && media.mimetype.startsWith('image/')) {
+            await msg.reply("📷 *Scanning Image...* Please wait while our AI analyzes this.");
+            console.log("👁️ Vision Agent activated. Analyzing media...");
+
+            // Pass the image to the Vision AI
+            const visionCompletion = await openai.chat.completions.create({
+              model: "llama-3.2-11b-vision-preview", // Groq's high-speed Vision model
+              messages: [
+                {
+                  role: "user",
+                  content: [
+                    { type: "text", text: "You are a clinical dental assistant. Briefly describe this image. If it is teeth or an X-ray, note any visible issues. Keep it strictly to 2 short sentences." },
+                    { type: "image_url", image_url: { url: `data:${media.mimetype};base64,${media.data}` } }
+                  ]
+                }
+              ]
+            });
+
+            const clinicalNotes = visionCompletion.choices[0].message.content || "Image reviewed, but no notes generated.";
+            
+            // Append the new notes to the patient's file
+            const previousNotes = patient.medicalNotes ? `${patient.medicalNotes}\n` : "";
+            await prisma.patient.update({
+              where: { id: patient.id },
+              data: { medicalNotes: `${previousNotes}[${new Date().toISOString().split('T')[0]}] ${clinicalNotes}` }
+            });
+
+            await msg.reply(`✅ *Clinical Summary Saved to Profile:*\n_${clinicalNotes}_\n\nDr. Alex Sharma will review this before your appointment.`);
+            return; // Stop here, don't run the standard booking AI
+          }
+        }
+        // ==========================================
+
+        // --- STANDARD TEXT CONVERSATION & BOOKING ---
+        let memoryContext = "You are talking to a new, unregistered patient. Be warm and welcoming.";
+        if (patient.firstName !== "WhatsApp") {
+          memoryContext = `CRITICAL CONTEXT: You are talking to a returning patient named ${patient.firstName} ${patient.lastName}. Greet them by name.`;
+        }
+
         const completion = await openai.chat.completions.create({
           model: "llama-3.1-8b-instant", 
           messages: [
@@ -65,24 +119,24 @@ export class WhatsappService implements OnModuleInit, OnModuleDestroy {
               role: "system", 
               content: `You are the lead receptionist for DGOS Dental Clinic. Today is ${new Date().toISOString().split('T')[0]}.
 
+${memoryContext}
+
 CLINIC KNOWLEDGE BASE:
 - Address: 123 Dental Avenue, Bengaluru, Karnataka.
 - Hours: Mon-Sat, 9:00 AM to 7:00 PM. Closed Sundays.
-- Doctors & Specialties:
-  * Dr. Alex Sharma (General Dentistry & Checkups)
-- General Consultation Fee: 500 INR.
+- Doctors: Dr. Alex Sharma
+- Consultation Fee: 500 INR.
 
 STRICT RULES:
-1. If the user asks about location, doctors, or services, answer politely using ONLY the Knowledge Base above.
-2. CRITICAL COMMAND: If the user explicitly asks to book or confirm an appointment for a specific date and time, DO NOT be polite. DO NOT ask for confirmation.
-3. You MUST stop chatting and output EXACTLY this format and nothing else: ACTION: BOOK | DATE: YYYY-MM-DD | TIME: HH:MM` 
+1. Answer politely using ONLY the Knowledge Base.
+2. If they ask to book an appointment for a specific date and time, DO NOT be polite. DO NOT ask for confirmation.
+3. Output EXACTLY this format and nothing else: ACTION: BOOK | DATE: YYYY-MM-DD | TIME: HH:MM` 
             },
             { role: "user", content: msg.body }
           ]
         });
 
         const aiReply = completion.choices[0].message.content || "";
-        console.log(`🤖 AI: ${aiReply}`);
 
         if (aiReply.includes("ACTION: BOOK")) {
           const match = aiReply.match(/DATE:\s*([0-9-]{10})\s*\|\s*TIME:\s*([0-9:]+)/);
@@ -90,57 +144,20 @@ STRICT RULES:
           if (match) {
             const [_, date, time] = match;
             
-            // 1. CLINIC & DOCTOR LOGIC (Strictly matching your schema)
             let doctor = await prisma.doctor.findFirst();
             if (!doctor) {
-              console.log("⚠️ Auto-creating default clinic and doctor...");
-              
               let clinic = await prisma.clinic.findFirst();
-              if (!clinic) {
-                clinic = await prisma.clinic.create({
-                  data: { name: "DGOS Main Clinic" }
-                });
-              }
-
+              if (!clinic) clinic = await prisma.clinic.create({ data: { name: "DGOS Main Clinic" } });
               doctor = await prisma.doctor.create({
-                data: {
-                  name: "Dr. Alex Sharma",
-                  specialty: "General Dentistry",
-                  clinicId: clinic.id // Correctly linking the relational ID
-                }
+                data: { name: "Dr. Alex Sharma", specialty: "General Dentistry", clinicId: clinic.id }
               });
             }
 
-            // 2. PATIENT LOGIC
-            let patient = await prisma.patient.findUnique({
-              where: { phone: msg.from }
-            });
-
-            if (!patient) {
-              patient = await prisma.patient.create({ 
-                data: { 
-                  firstName: "WhatsApp", 
-                  lastName: "Patient",
-                  phone: msg.from 
-                } 
-              });
-            }
-
-            // 3. APPOINTMENT LOGIC
             await prisma.appointment.create({ 
-              data: { 
-                date: date, 
-                time: time, 
-                treatment: "Consultation", 
-                value: 500, 
-                status: "Scheduled", 
-                doctorId: doctor.id, 
-                patientId: patient.id
-              } 
+              data: { date, time, treatment: "Consultation", value: 500, status: "Scheduled", doctorId: doctor.id, patientId: patient.id } 
             });
             
             await msg.reply(`✅ Your appointment has been booked with ${doctor.name} for ${date} at ${time}. We look forward to seeing you!`);
-            console.log(`✅ Appointment successfully saved for ${msg.from}`);
           } else {
             await msg.reply(aiReply);
           }
@@ -154,9 +171,28 @@ STRICT RULES:
     });
 
     this.client.initialize().catch((err) => {
-      console.error("❌ WhatsApp initialization failed:", err.message);
-      console.log("🔄 Retrying connection in 5 seconds...");
       setTimeout(() => this.initializeWhatsApp(), 5000);
     });
+  }
+
+  @Cron('* * * * *') 
+  async handleAutomatedReminders() {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowString = tomorrow.toISOString().split('T')[0];
+
+    try {
+      const upcomingAppointments = await prisma.appointment.findMany({
+        where: { date: tomorrowString, status: 'Scheduled' },
+        include: { patient: true, doctor: true }
+      });
+
+      if (upcomingAppointments.length === 0) return;
+
+      for (const apt of upcomingAppointments) {
+        const reminderMsg = `🤖 *Automated Reminder*\n\nHi ${apt.patient.firstName}, this is DGOS Dental Clinic! We are looking forward to seeing you tomorrow (${apt.date}) at ${apt.time}.`;
+        await this.sendMessage(apt.patient.phone, reminderMsg);
+      }
+    } catch (error) {}
   }
 }

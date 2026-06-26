@@ -1,3 +1,2 @@
-2026/06/26-10:23:03.322 4a08 Reusing MANIFEST C:\Users\Nitin\Desktop\dgos-platform\apps\backend\.wwebjs_auth\session-dgos-clinic-bot\Default\Site Characteristics Database/MANIFEST-000001
-2026/06/26-10:23:03.347 4a08 Recovering log #3
-2026/06/26-10:23:03.347 4a08 Reusing old log C:\Users\Nitin\Desktop\dgos-platform\apps\backend\.wwebjs_auth\session-dgos-clinic-bot\Default\Site Characteristics Database/000003.log 
+2026/06/26-11:40:05.705 3fb0 Creating DB C:\Users\Nitin\Desktop\dgos-platform\apps\backend\.wwebjs_auth\session-dgos-clinic-bot\Default\Site Characteristics Database since it was missing.
+2026/06/26-11:40:05.714 3fb0 Reusing MANIFEST C:\Users\Nitin\Desktop\dgos-platform\apps\backend\.wwebjs_auth\session-dgos-clinic-bot\Default\Site Characteristics Database/MANIFEST-000001

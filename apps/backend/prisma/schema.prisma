@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -29,6 +29,7 @@ model Patient {
   firstName    String
   lastName     String
   phone        String        @unique
+  medicalNotes String?       // NEW: AI Vision will save notes here
   appointments Appointment[]
 }
 
