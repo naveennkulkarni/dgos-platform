@@ -1,0 +1,9 @@
+# DGOS CLINC BOT RULES (STRICT)
+
+- NEVER change the Prisma schema unless explicitly asked.
+- The Patient model has NO 'phone' field. Use 'firstName' and 'lastName' to identify patients.
+- ALL 'prisma.appointment.create' calls MUST first check for an existing Doctor using 'prisma.doctor.findFirst()'.
+- Never use 'any' casting if it can be avoided.
+- If a database operation fails, perform a 'findFirst' before attempting a 'create'.
+- Always use the 'gsk_' Groq API key for all LLM calls.
+- Treat the current 'whatsapp.service.ts' as the master logic.
