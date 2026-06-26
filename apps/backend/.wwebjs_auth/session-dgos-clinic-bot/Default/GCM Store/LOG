@@ -1,2 +1,3 @@
-2026/06/26-11:40:14.968 38cc Creating DB C:\Users\Nitin\Desktop\dgos-platform\apps\backend\.wwebjs_auth\session-dgos-clinic-bot\Default\GCM Store since it was missing.
-2026/06/26-11:40:14.983 38cc Reusing MANIFEST C:\Users\Nitin\Desktop\dgos-platform\apps\backend\.wwebjs_auth\session-dgos-clinic-bot\Default\GCM Store/MANIFEST-000001
+2026/06/26-23:14:58.279 508 Reusing MANIFEST C:\Users\Nitin\Desktop\dgos-platform\apps\backend\.wwebjs_auth\session-dgos-clinic-bot\Default\GCM Store/MANIFEST-000001
+2026/06/26-23:14:58.297 508 Recovering log #3
+2026/06/26-23:14:58.306 508 Reusing old log C:\Users\Nitin\Desktop\dgos-platform\apps\backend\.wwebjs_auth\session-dgos-clinic-bot\Default\GCM Store/000003.log 

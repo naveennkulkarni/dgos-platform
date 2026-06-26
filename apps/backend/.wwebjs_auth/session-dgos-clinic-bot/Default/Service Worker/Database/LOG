@@ -1,2 +1,3 @@
-2026/06/26-11:40:09.503 5384 Creating DB C:\Users\Nitin\Desktop\dgos-platform\apps\backend\.wwebjs_auth\session-dgos-clinic-bot\Default\Service Worker\Database since it was missing.
-2026/06/26-11:40:09.512 5384 Reusing MANIFEST C:\Users\Nitin\Desktop\dgos-platform\apps\backend\.wwebjs_auth\session-dgos-clinic-bot\Default\Service Worker\Database/MANIFEST-000001
+2026/06/26-23:14:41.253 4754 Reusing MANIFEST C:\Users\Nitin\Desktop\dgos-platform\apps\backend\.wwebjs_auth\session-dgos-clinic-bot\Default\Service Worker\Database/MANIFEST-000001
+2026/06/26-23:14:41.255 4754 Recovering log #3
+2026/06/26-23:14:41.256 4754 Reusing old log C:\Users\Nitin\Desktop\dgos-platform\apps\backend\.wwebjs_auth\session-dgos-clinic-bot\Default\Service Worker\Database/000003.log 

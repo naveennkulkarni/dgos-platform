@@ -1,2 +1,3 @@
-2026/06/26-11:40:05.669 42bc Creating DB C:\Users\Nitin\Desktop\dgos-platform\apps\backend\.wwebjs_auth\session-dgos-clinic-bot\Default\Sync Data\LevelDB since it was missing.
-2026/06/26-11:40:05.795 42bc Reusing MANIFEST C:\Users\Nitin\Desktop\dgos-platform\apps\backend\.wwebjs_auth\session-dgos-clinic-bot\Default\Sync Data\LevelDB/MANIFEST-000001
+2026/06/26-23:14:41.599 3278 Reusing MANIFEST C:\Users\Nitin\Desktop\dgos-platform\apps\backend\.wwebjs_auth\session-dgos-clinic-bot\Default\Sync Data\LevelDB/MANIFEST-000001
+2026/06/26-23:14:41.600 3278 Recovering log #3
+2026/06/26-23:14:41.601 3278 Reusing old log C:\Users\Nitin\Desktop\dgos-platform\apps\backend\.wwebjs_auth\session-dgos-clinic-bot\Default\Sync Data\LevelDB/000003.log 
