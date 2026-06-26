@@ -1,10 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getLiveMetrics } from './actions';
 
 export default function CombinedPortal() {
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [activeTab, setActiveTab] = useState('Growth & Sales');
+  
+  // State to hold the live database numbers
+  const [metrics, setMetrics] = useState({ leads: 0, pipeline: 0 });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Fetch the data when the admin dashboard loads
+  const fetchMetrics = async () => {
+    setIsRefreshing(true);
+    const data = await getLiveMetrics();
+    setMetrics(data);
+    setIsRefreshing(false);
+  };
+
+  useEffect(() => {
+    if (isAdminMode && activeTab === 'Growth & Sales') {
+      fetchMetrics();
+    }
+  }, [isAdminMode, activeTab]);
 
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', minHeight: '100vh', background: isAdminMode ? '#f4f6f8' : '#ffffff' }}>
@@ -99,8 +118,12 @@ export default function CombinedPortal() {
                   {activeTab === 'Financial Ledger' && 'Automated Billing and Revenue Tracking.'}
                 </p>
               </div>
-              <button style={{ background: '#ebf4ff', color: '#0066cc', border: '1px solid #cce0ff', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
-                🔄 Refresh Live Pipeline
+              <button 
+                onClick={fetchMetrics}
+                disabled={isRefreshing}
+                style={{ background: isRefreshing ? '#ccc' : '#ebf4ff', color: isRefreshing ? '#666' : '#0066cc', border: '1px solid #cce0ff', padding: '8px 16px', borderRadius: '6px', fontWeight: 'bold', cursor: isRefreshing ? 'wait' : 'pointer' }}
+              >
+                {isRefreshing ? '🔄 Syncing...' : '🔄 Refresh Live Pipeline'}
               </button>
             </div>
 
@@ -110,13 +133,13 @@ export default function CombinedPortal() {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginBottom: '24px' }}>
                   <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                     <p style={{ margin: '0 0 8px 0', color: '#888', fontSize: '0.9rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Total Pipeline Value</p>
-                    <h3 style={{ margin: '0 0 8px 0', fontSize: '2rem' }}>₹0</h3>
+                    <h3 style={{ margin: '0 0 8px 0', fontSize: '2rem' }}>₹{metrics.pipeline.toLocaleString()}</h3>
                     <p style={{ margin: 0, color: '#0066cc', fontSize: '0.9rem' }}>Active Unconverted Prospects</p>
                   </div>
                   <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                    <p style={{ margin: '0 0 8px 0', color: '#888', fontSize: '0.9rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Blended Acquisition Cost (CAC)</p>
-                    <h3 style={{ margin: '0 0 8px 0', fontSize: '2rem', color: '#00b36b' }}>₹840</h3>
-                    <p style={{ margin: 0, color: '#00b36b', fontSize: '0.9rem' }}>Optimal Target Zone (Under ₹1200)</p>
+                    <p style={{ margin: '0 0 8px 0', color: '#888', fontSize: '0.9rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Live Leads Captured</p>
+                    <h3 style={{ margin: '0 0 8px 0', fontSize: '2rem', color: '#00b36b' }}>{metrics.leads} Patients</h3>
+                    <p style={{ margin: 0, color: '#00b36b', fontSize: '0.9rem' }}>Automatically logged from WhatsApp</p>
                   </div>
                   <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                     <p style={{ margin: '0 0 8px 0', color: '#888', fontSize: '0.9rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Gateway Intelligence</p>
@@ -129,7 +152,7 @@ export default function CombinedPortal() {
                 </div>
                 
                 <div style={{ background: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <p style={{ color: '#aaa', fontStyle: 'italic' }}>No inbound leads captured yet. Send a WhatsApp to begin!</p>
+                    <p style={{ color: '#aaa', fontStyle: 'italic' }}>Database sync complete. New leads will appear in the metrics above.</p>
                 </div>
               </>
             )}
