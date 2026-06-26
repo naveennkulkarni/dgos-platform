@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { PrismaModule } from './prisma/prisma.module';
-import { ClinicsModule } from './modules/clinics/clinics.module';
-import { PatientsModule } from './modules/patients/patients.module';
-import { StaffModule } from './modules/staff/staff.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { WhatsappService } from './whatsapp.service';
 
 @Module({
-  imports: [PrismaModule, ClinicsModule, PatientsModule, StaffModule],
+  imports: [],
+  controllers: [AppController],
+  providers: [AppService, WhatsappService], // We injected the new service here
 })
 export class AppModule {}

@@ -3,8 +3,12 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // This line fixes the 'Failed to fetch' error:
-  app.enableCors();
+  // This explicitly allows your frontend to talk to the backend
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
   await app.listen(3000);
 }
 bootstrap();
